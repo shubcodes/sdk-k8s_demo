@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+    <style>
+        #messages {
+            max-height: 300px;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat App</h1>
+    <div id="messages"></div>
+    <input type="text" id="username" placeholder="Username">
+    <input type="text" id="message" placeholder="Message" onkeydown="handleKeyDown(event)">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const wsUrl = wsProtocol + "//" + window.location.host + "/ws";
+        const socket = new WebSocket(wsUrl);
+    
+        socket.onmessage = function(event) {
+            const message = JSON.parse(event.data);
+            displayMessage(message);
+            saveMessage(message);
+        };
+
+        // Retrieve chat messages from local storage
+        const savedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+
+        // Display saved messages on page load
+        savedMessages.forEach(message => {
+            displayMessage(message);
+        });
+
+        function sendMessage() {
+            const username = document.getElementById("username").value;
+            const message = document.getElementById("message").value;
+
+            const chatMessage = {
+                username: username,
+                content: message
+            };
+
+            socket.send(JSON.stringify(chatMessage));
+
+            document.getElementById("message").value = "";
+        }
+
+        function displayMessage(message) {
+            const messagesDiv = document.getElementById("messages");
+
+            const messageDiv = document.createElement("div");
+            messageDiv.innerHTML = `<strong>${message.username}: </strong>${message.content}`;
+
+            messagesDiv.appendChild(messageDiv);
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function saveMessage(message) {
+            // Retrieve existing chat messages from local storage
+            const savedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+
+            // Add new message to the array
+            savedMessages.push(message);
+
+            // Save updated chat messages to local storage
+            localStorage.setItem("chatMessages", JSON.stringify(savedMessages));
+        }
+    </script>
+</body>
+</html>

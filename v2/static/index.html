@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+    <style>
+        #messages {
+            max-height: 300px;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat App</h1>
+    <div id="messages"></div>
+    <input type="text" id="username" placeholder="Username">
+    <input type="text" id="message" placeholder="Message" onkeydown="handleKeyDown(event)">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        let socket;
+        let socketReady = false;
+
+        fetch("/ws-url")
+            .then(response => response.text())
+            .then(url => {
+                const wsUrl = url.replace("http://", "ws://").replace("https://", "wss://") + "/ws";
+                console.log("WebSocket URL: " + wsUrl);
+
+                socket = new WebSocket(wsUrl);
+
+                socket.onopen = function() {
+                    socketReady = true;
+                    console.log("WebSocket connection opened");
+                };
+
+                socket.onmessage = function(event) {
+                    const message = JSON.parse(event.data);
+                    console.log("Received message:", message);
+                    displayMessage(message);
+                    saveMessageToStorage(message);
+                };
+
+                socket.onclose = function(event) {
+                    console.log("WebSocket connection closed with code:", event.code);
+                };
+
+                socket.onerror = function(error) {
+                    console.log("WebSocket error:", error);
+                };
+
+                // Fetch chat history from the server
+                fetchChatHistory();
+            })
+            .catch(error => {
+                console.log("Error fetching WebSocket URL:", error);
+            });
+
+        // Event handlers
+        function handleKeyDown(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const username = document.getElementById("username").value;
+            const message = document.getElementById("message").value;
+
+            if (socketReady) {
+                const chatMessage = {
+                    username: username,
+                    content: message
+                };
+
+                socket.send(JSON.stringify(chatMessage));
+                console.log("Sent message:", chatMessage);
+
+                document.getElementById("message").value = "";
+            }
+        }
+
+        function fetchChatHistory() {
+            fetch("/history")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Error fetching chat history: " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        data.forEach(message => {
+                            displayMessage(message);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.log("Error fetching chat history:", error);
+                });
+        }
+
+        function displayMessage(message) {
+            const messagesDiv = document.getElementById("messages");
+
+            const messageDiv = document.createElement("div");
+            messageDiv.innerHTML = `<strong>${message.username}: </strong>${message.content}`;
+
+            messagesDiv.appendChild(messageDiv);
+        }
+
+        function saveMessageToStorage(message) {
+            // Implement your own storage mechanism here (e.g., local storage, cookies)
+            // and save the message for persistence
+        }
+    </script>
+</body>
+</html>
