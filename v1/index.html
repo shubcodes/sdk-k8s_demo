@@ -18,8 +18,8 @@
 
     <script>
     const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = wsProtocol + "//" + window.location.host + "/ws";
-      const socket = new WebSocket(wsUrl);
+    const wsUrl = wsProtocol + "//" + window.location.host + "/ws";
+    const socket = new WebSocket(wsUrl);
 
         socket.onmessage = function(event) {
             const message = JSON.parse(event.data);

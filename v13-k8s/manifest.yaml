@@ -1,0 +1,58 @@
+##SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: v13
+  namespace: v13-ingress-controller
+
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: v13
+---
+##DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: v13
+  namespace: v13-ingress-controller
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: v13
+  template:
+    metadata:
+      labels:
+        app: v13
+    spec:
+      containers:
+      - name: v13
+        image: shubcodes/v13:v1
+        ports:
+        - containerPort: 8080
+---
+##INGRESS
+# ngrok Ingress Controller Configuration
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: v13
+  namespace: v13-ingress-controller
+spec:
+  ingressClassName: ngrok
+  rules:
+    - host: josh.ngrok.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: v13
+                port:
+                  number: 80
