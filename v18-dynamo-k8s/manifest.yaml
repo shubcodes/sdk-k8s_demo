@@ -1,0 +1,67 @@
+##SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: v17
+  namespace: v17-ingress-controller
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: v17
+---
+##DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: v17
+  namespace: v17-ingress-controller
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: v17
+  template:
+    metadata:
+      labels:
+        app: v17
+    spec:
+      containers:
+      - name: v17
+        image: shubcodes/v18test:v1
+        ports:
+        - containerPort: 8080
+        env:    # Define environment variables
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: AWS_SECRET_ACCESS_KEY
+---
+##INGRESS
+# ngrok Ingress Controller Configuration
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: v17
+  namespace: v17-ingress-controller
+spec:
+  ingressClassName: ngrok
+  rules:
+    - host: pompomsv18.ngrok.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: v17
+                port:
+                  number: 80

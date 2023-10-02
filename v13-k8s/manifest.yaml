@@ -46,7 +46,7 @@ metadata:
 spec:
   ingressClassName: ngrok
   rules:
-    - host: josh.ngrok.io
+    - host: v13test2.ngrok.io
       http:
         paths:
           - path: /

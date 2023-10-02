@@ -38,7 +38,7 @@ func main() {
 func run(ctx context.Context) error {
 	tun, err := ngrok.Listen(ctx,
 		config.LabeledTunnel(
-			config.WithLabel("edge", "edghts_2QTdMBHZhE6Hs78ymaxfskI1Uge"),
+			config.WithLabel("edge", "edghts_2SlOto8T8ekzyzQHBtiXIMsNlpB"),
 		),
 		ngrok.WithAuthtoken(os.Getenv("NGROK_AUTHTOKEN")),
 	)
