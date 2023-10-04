@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -118,14 +117,14 @@ func saveChatMessagesToFile() {
 		return
 	}
 
-	err = ioutil.WriteFile(storageFile, data, 0644)
+	err = os.WriteFile(storageFile, data, 0644)
 	if err != nil {
 		log.Println("Error writing chat messages to file:", err)
 	}
 }
 
 func loadChatMessagesFromFile() {
-	data, err := ioutil.ReadFile(storageFile)
+	data, err := os.ReadFile(storageFile)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// File does not exist yet, no need to load messages
